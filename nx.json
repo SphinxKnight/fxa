@@ -26,8 +26,7 @@
           "test-integration-auth-local",
           "test-integration-api",
           "test-integration-shared"
-        ],
-        "accessToken": "ODI2MGMxMDYtZjI1OS00MWM4LTg4YjEtOTMzNmRlNzEwNzU4fHJlYWQtd3JpdGU="
+        ]
       }
     }
   },
