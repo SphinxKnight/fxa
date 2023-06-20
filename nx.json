@@ -316,9 +316,7 @@
   },
   "namedInputs": {
     "default": [
-      "{projectRoot}/**/*.js",
-      "{projectRoot}/**/*.ts",
-      "{projectRoot}/**/*.tsx"
+      "{projectRoot}/package.json"
     ],
     "production": [
       "default"
