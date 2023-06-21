@@ -581,6 +581,7 @@ jobs:
       - provision
       - git-clean
       - build
+      - build
       - cache-save-yarn
       - save-workspace
 
