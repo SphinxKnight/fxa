@@ -154,3 +154,4 @@ packages/fxa-settings/test/
 Library
 .node
 process.yml
+tmp

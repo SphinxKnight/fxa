@@ -387,20 +387,28 @@ commands:
     steps:
       - run:
           name: Build
-          command: sleep 2m
+          command: npx nx run-many -t build --parallel=1
           environment:
             CI:
             NODE_ENV: test
+      - run:
+          name: list nx cache
+          command: ls -l node_modules/.cache/nx
 
   unit-test:
     steps:
       - run:
+          name: list nx cache
+          command: ls -l node_modules/.cache/nx
+      - run:
           name: Run unit tests
-          # command: npx nx run-many -t test-unit --parallel=1
-          command: sleep 2m
+          command: npx nx run-many -t test-unit --parallel=1
           environment:
             CI:
             NODE_ENV: test
+      - run:
+          name: list nx cache after test
+          command: ls -l node_modules/.cache/nx
 
   save-init-workspace:
     steps:
