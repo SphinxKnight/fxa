@@ -45,9 +45,15 @@
         "{projectRoot}/public/locales",
         "{projectRoot}/public/legal-docs",
         "{projectRoot}/var/public",
+        "{projectRoot}/test/react.ftl",
         "{projectRoot}/vendor/ejs.js",
         "{projectRoot}/app/styles/main.css",
-        "{projectRoot}/server/config/local.json"
+        "{projectRoot}/server/config/local.json",
+        "{projectRoot}/test/local/payments/paypal-client.js",
+        "{projectRoot}/lib/payments/paypal/client.ts",
+        "{projectRoot}/src/lib/hooks/useLinkStatus/index.tsx",
+        "{projectRoot}/tests/functional/oauth_webchannel.js",
+        "{projectRoot}/tests/functional/robots_txt.js"
       ]
     },
     "build": {
@@ -56,9 +62,19 @@
       "outputs": [
         "{projectRoot}/build",
         "{projectRoot}/dist",
+        "{projectRoot}/locales",
         "{projectRoot}/public/locales",
         "{projectRoot}/public/legal-docs",
-        "{projectRoot}/test/react.ftl"
+        "{projectRoot}/var/public",
+        "{projectRoot}/test/react.ftl",
+        "{projectRoot}/vendor/ejs.js",
+        "{projectRoot}/app/styles/main.css",
+        "{projectRoot}/server/config/local.json",
+        "{projectRoot}/test/local/payments/paypal-client.js",
+        "{projectRoot}/lib/payments/paypal/client.ts",
+        "{projectRoot}/src/lib/hooks/useLinkStatus/index.tsx",
+        "{projectRoot}/tests/functional/oauth_webchannel.js",
+        "{projectRoot}/tests/functional/robots_txt.js"
       ]
     },
     "build-storybook": {

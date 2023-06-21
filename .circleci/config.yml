@@ -398,7 +398,7 @@ commands:
           name: nx graph
           command: cat node_modules/.cache/nx/project-graph.json
       - store_artifacts:
-          path: node_modules/.cache/nx
+          path: node_modules/.cache/nx/*.json
 
   unit-test:
     steps:
@@ -418,7 +418,7 @@ commands:
           name: nx graph
           command: cat node_modules/.cache/nx/project-graph.json
       - store_artifacts:
-          path: node_modules/.cache/nx
+          path: node_modules/.cache/nx/*.json
 
   save-init-workspace:
     steps:
