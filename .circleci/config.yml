@@ -394,6 +394,11 @@ commands:
       - run:
           name: list nx cache
           command: ls -l node_modules/.cache/nx
+      - run:
+          name: nx graph
+          command: cat node_modules/.cache/nx/project-graph.json
+      - store_artifacts:
+          path: node_modules/.cache/nx
 
   unit-test:
     steps:
@@ -409,6 +414,11 @@ commands:
       - run:
           name: list nx cache after test
           command: ls -l node_modules/.cache/nx
+      - run:
+          name: nx graph
+          command: cat node_modules/.cache/nx/project-graph.json
+      - store_artifacts:
+          path: node_modules/.cache/nx
 
   save-init-workspace:
     steps:
