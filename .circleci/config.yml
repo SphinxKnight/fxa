@@ -196,7 +196,7 @@ commands:
     steps:
         - run:
             name: Git clean files
-            command: git clean -x -f -e base_ref -e yarn.lock.base -e node_modules -e .yarn
+            command: git clean -x -f -e base_ref -e yarn.lock.base -e node_modules -e .yarn -e external
 
   git-checkout:
     # Note: Since we use a pre-populated base image that has a .git folder already present (see
@@ -578,8 +578,8 @@ jobs:
     resource_class: large
     steps:
       - git-checkout
-      - git-clean
       - provision
+      - git-clean
       - build
       - cache-save-yarn
       - save-workspace
