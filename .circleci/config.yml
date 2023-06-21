@@ -211,6 +211,7 @@ commands:
 
             git reset --hard
             git checkout << pipeline.git.revision >>
+            git clean -xf packages
 
             commitsBehind=$(git rev-list --left-only --count main...HEAD);
             if [[ $((commitsBehind)) > 0 ]]; then
@@ -240,22 +241,6 @@ commands:
             ./_scripts/create-version-json.sh
       - store_artifacts:
           path: ./packages/version.json
-
-  cache-save-nx:
-    steps:
-      - save_cache:
-          name: Save NX Cache
-          key: fxa-nx-002-{{ .Branch }}-{{ epoch }}
-          paths:
-            - /home/circleci/project/node_modules/.cache/nx
-
-  cache-restore-nx:
-    steps:
-      - restore_cache:
-          name: Restore Most Recent NX Cache
-          keys:
-            - fxa-nx-002-{{ .Branch }}-
-            - fxa-nx-002
 
   cache-save-yarn:
     steps:
@@ -394,9 +379,6 @@ commands:
       - run:
           name: list nx cache
           command: ls -l node_modules/.cache/nx
-      - run:
-          name: nx graph
-          command: cat node_modules/.cache/nx/project-graph.json
       - store_artifacts:
           path: ./node_modules/.cache/nx/file-map.json
 
@@ -580,7 +562,6 @@ jobs:
           force-deploy: << parameters.force-deploy >>
       - install-test-browsers
       - cache-restore-yarn
-      - cache-restore-nx
       - create-fxa-ci-images
       - cache-save-yarn
 

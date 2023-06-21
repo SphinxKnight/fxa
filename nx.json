@@ -48,12 +48,7 @@
         "{projectRoot}/test/react.ftl",
         "{projectRoot}/vendor/ejs.js",
         "{projectRoot}/app/styles/main.css",
-        "{projectRoot}/server/config/local.json",
-        "{projectRoot}/test/local/payments/paypal-client.js",
-        "{projectRoot}/lib/payments/paypal/client.ts",
-        "{projectRoot}/src/lib/hooks/useLinkStatus/index.tsx",
-        "{projectRoot}/tests/functional/oauth_webchannel.js",
-        "{projectRoot}/tests/functional/robots_txt.js"
+        "{projectRoot}/server/config/local.json"
       ]
     },
     "build": {
@@ -69,12 +64,7 @@
         "{projectRoot}/test/react.ftl",
         "{projectRoot}/vendor/ejs.js",
         "{projectRoot}/app/styles/main.css",
-        "{projectRoot}/server/config/local.json",
-        "{projectRoot}/test/local/payments/paypal-client.js",
-        "{projectRoot}/lib/payments/paypal/client.ts",
-        "{projectRoot}/src/lib/hooks/useLinkStatus/index.tsx",
-        "{projectRoot}/tests/functional/oauth_webchannel.js",
-        "{projectRoot}/tests/functional/robots_txt.js"
+        "{projectRoot}/server/config/local.json"
       ]
     },
     "build-storybook": {
@@ -224,15 +214,25 @@
       "{projectRoot}/**/*.js",
       "{projectRoot}/**/*.ts",
       "{projectRoot}/**/*.tsx",
-      "!{projectRoot}/test/react.ftl",
+
+      "!{projectRoot}/build",
+      "!{projectRoot}/dist",
+      "!{projectRoot}/locales",
+      "!{projectRoot}/public/locales",
+      "!{projectRoot}/public/legal-docs",
+
       "!{projectRoot}/vendor/ejs.js",
       "!{projectRoot}/app/styles/main.css",
       "!{projectRoot}/server/config/local.json",
-      "!{projectRoot}/test/local/payments/paypal-client.js",
-      "!{projectRoot}/lib/payments/paypal/client.ts",
-      "!{projectRoot}/src/lib/hooks/useLinkStatus/index.tsx",
-      "!{projectRoot}/tests/functional/oauth_webchannel.js",
-      "!{projectRoot}/tests/functional/robots_txt.js"
+      "!{projectRoot}/coverage",
+      "!{projectRoot}/.nyc_output",
+      "!{projectRoot}/test-results.xml",
+      "!{projectRoot}/test/react.ftl",
+      "!{projectRoot}/artifacts",
+
+      "!{workspaceRoot}/base_ref",
+      "!{workspaceRoot}/yarn.lock.base",
+      "!{workspaceRoot}/tools/generators/"
     ]
   },
   "cli": {
