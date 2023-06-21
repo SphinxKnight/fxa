@@ -220,8 +220,20 @@
     }
   },
   "namedInputs": {
-    "default": ["{projectRoot}/package.json"],
-    "production": ["default"]
+    "production": [
+      "{projectRoot}/**/*.js",
+      "{projectRoot}/**/*.ts",
+      "{projectRoot}/**/*.tsx",
+      "!{projectRoot}/test/react.ftl",
+      "!{projectRoot}/vendor/ejs.js",
+      "!{projectRoot}/app/styles/main.css",
+      "!{projectRoot}/server/config/local.json",
+      "!{projectRoot}/test/local/payments/paypal-client.js",
+      "!{projectRoot}/lib/payments/paypal/client.ts",
+      "!{projectRoot}/src/lib/hooks/useLinkStatus/index.tsx",
+      "!{projectRoot}/tests/functional/oauth_webchannel.js",
+      "!{projectRoot}/tests/functional/robots_txt.js"
+    ]
   },
   "cli": {
     "packageManager": "yarn"
