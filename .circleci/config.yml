@@ -192,6 +192,12 @@ commands:
             git fetch https://github.com/mozilla/fxa << pipeline.git.revision >> --depth=2
             git checkout << pipeline.git.revision >>
 
+  git-clean:
+    steps:
+        - run:
+            name: Git clean files
+            command: git clean -x -f -e base_ref -e yarn.lock.base -e node_modules -e .yarn
+
   git-checkout:
     # Note: Since we use a pre-populated base image that has a .git folder already present (see
     # comment above), running a fetch and checkout saves a considerable amount of time when compared
@@ -211,7 +217,6 @@ commands:
 
             git reset --hard
             git checkout << pipeline.git.revision >>
-            git clean -x -f -e base_ref -e yarn.lock.base -e node_modules
 
             commitsBehind=$(git rev-list --left-only --count main...HEAD);
             if [[ $((commitsBehind)) > 0 ]]; then
@@ -573,6 +578,7 @@ jobs:
     resource_class: large
     steps:
       - git-checkout
+      - git-clean
       - provision
       - build
       - cache-save-yarn
@@ -582,6 +588,7 @@ jobs:
     executor: default-executor
     resource_class: large
     steps:
+      - git-clean
       - restore-workspace
       # should get nx cache hits
       - build
@@ -607,6 +614,7 @@ jobs:
     executor: default-executor
     resource_class: large
     steps:
+      - git-clean
       - restore-workspace
       - unit-test
 
