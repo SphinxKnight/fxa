@@ -211,7 +211,7 @@ commands:
 
             git reset --hard
             git checkout << pipeline.git.revision >>
-            git clean -xf packages
+            git clean -x -f -e base_ref -e yarn.lock.base -e node_modules
 
             commitsBehind=$(git rev-list --left-only --count main...HEAD);
             if [[ $((commitsBehind)) > 0 ]]; then
