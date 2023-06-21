@@ -36,11 +36,8 @@
       "inputs": ["production", "^production"]
     },
     "prebuild": {
-      "dependsOn": ["^prebuild"],
       "inputs": ["production", "^production"],
       "outputs": [
-        "{projectRoot}/build",
-        "{projectRoot}/dist",
         "{projectRoot}/locales",
         "{projectRoot}/public/locales",
         "{projectRoot}/public/legal-docs",
@@ -57,19 +54,14 @@
       "outputs": [
         "{projectRoot}/build",
         "{projectRoot}/dist",
-        "{projectRoot}/locales",
-        "{projectRoot}/public/locales",
-        "{projectRoot}/public/legal-docs",
-        "{projectRoot}/var/public",
         "{projectRoot}/test/react.ftl",
-        "{projectRoot}/vendor/ejs.js",
         "{projectRoot}/app/styles/main.css",
         "{projectRoot}/server/config/local.json"
       ]
     },
     "build-storybook": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": ["{project-root}/storybook-static"]
     },
     "lint": {
@@ -77,7 +69,7 @@
       "outputs": ["{projectRoot}/.eslintcache"]
     },
     "test": {
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "dependsOn": ["test-unit", "test-integration", "test-e2e"],
       "outputs": [
         "{projectRoot}/coverage",
@@ -87,7 +79,7 @@
     },
     "test-unit": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -96,7 +88,7 @@
     },
     "test-integration": {
       "dependsOn": ["build", "build-l10n-test"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -105,7 +97,7 @@
     },
     "test-e2e": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -114,7 +106,7 @@
     },
     "test-integration-auth-server-p1": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -123,7 +115,7 @@
     },
     "test-integration-auth-server-p2": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -132,7 +124,7 @@
     },
     "test-integration-frontend": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -141,7 +133,7 @@
     },
     "test-integration-auth-scripts": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -150,7 +142,7 @@
     },
     "test-integration-auth-oauth": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -159,7 +151,7 @@
     },
     "test-integration-auth-remote": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -168,7 +160,7 @@
     },
     "test-integration-auth-local": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -177,7 +169,7 @@
     },
     "test-integration-api": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -186,7 +178,7 @@
     },
     "test-integration-shared": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/coverage",
         "{projectRoot}/.nyc_output",
@@ -195,44 +187,37 @@
     },
     "start": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": []
     },
     "storybook": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": []
     },
     "restart": {
       "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": []
     }
   },
   "namedInputs": {
+    "sharedGlobals": ["{workspaceRoot}/external"],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
-      "{projectRoot}/**/*.js",
-      "{projectRoot}/**/*.ts",
-      "{projectRoot}/**/*.tsx",
-
+      "default",
       "!{projectRoot}/build",
       "!{projectRoot}/dist",
       "!{projectRoot}/locales",
       "!{projectRoot}/public/locales",
       "!{projectRoot}/public/legal-docs",
-
       "!{projectRoot}/vendor/ejs.js",
       "!{projectRoot}/app/styles/main.css",
       "!{projectRoot}/server/config/local.json",
       "!{projectRoot}/coverage",
       "!{projectRoot}/.nyc_output",
       "!{projectRoot}/test-results.xml",
-      "!{projectRoot}/test/react.ftl",
-      "!{projectRoot}/artifacts",
-
-      "!{workspaceRoot}/base_ref",
-      "!{workspaceRoot}/yarn.lock.base",
-      "!{workspaceRoot}/tools/generators/"
+      "!{projectRoot}/test/react.ftl"
     ]
   },
   "cli": {
