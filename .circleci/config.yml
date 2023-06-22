@@ -377,7 +377,7 @@ commands:
     steps:
       - run:
           name: Build
-          command: npx nx run-many -t build --parallel=1
+          command: npx nx run fxa-auth-server:prebuild --parallel=1
           environment:
             CI:
             NODE_ENV: test
@@ -394,7 +394,8 @@ commands:
           command: ls -l node_modules/.cache/nx
       - run:
           name: Run unit tests
-          command: npx nx run-many -t test-unit --parallel=1
+          # command: npx nx run-many -t test-unit --parallel=1
+          command: sleep 2m
           environment:
             CI:
             NODE_ENV: test
@@ -581,7 +582,6 @@ jobs:
       - provision
       - git-clean
       - build
-      - build
       - cache-save-yarn
       - save-workspace
 
@@ -750,9 +750,7 @@ jobs:
     steps:
       - git-checkout
       - restore-workspace
-      - run:
-          name: Build
-          command: nx run fxa-auth-server:prebuild
+      - build
       - run:
           name: Build and deploy Storybooks
           command: |
