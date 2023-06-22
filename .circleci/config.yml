@@ -377,7 +377,7 @@ commands:
     steps:
       - run:
           name: Build
-          command: npx nx run-many -t build --parallel=1
+          command: npx nx fxa-settings:prebuild --parallel=1
           environment:
             CI:
             NODE_ENV: test
@@ -386,6 +386,8 @@ commands:
           command: ls -l node_modules/.cache/nx
       - store_artifacts:
           path: ./node_modules/.cache/nx/file-map.json
+      - store_artifacts:
+          path: ./node_modules/.cache/nx/nxdeps.json
 
   unit-test:
     steps:
@@ -407,6 +409,8 @@ commands:
           command: cat node_modules/.cache/nx/project-graph.json
       - store_artifacts:
           path: ./node_modules/.cache/nx/file-map.json
+      - store_artifacts:
+          path: ./node_modules/.cache/nx/nxdeps.json
 
   save-init-workspace:
     steps:
