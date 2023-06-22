@@ -431,9 +431,9 @@ commands:
 
   restore-workspace:
     steps:
-      - git-clean
       - attach_workspace:
           at: /home/circleci/project
+      - git-clean
 
   fail-fast:
     steps:
@@ -576,6 +576,7 @@ jobs:
     resource_class: large
     steps:
       - git-checkout
+      - git-clean
       - provision
       - build
       - cache-save-yarn
