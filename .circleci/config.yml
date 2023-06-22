@@ -247,6 +247,13 @@ commands:
       - store_artifacts:
           path: ./packages/version.json
 
+  save-nx-artifacts:
+    steps:
+      - store_artifacts:
+          path: ./node_modules/.cache/nx/file-map.json
+      - store_artifacts:
+          path: ./node_modules/.cache/nx/nxdeps.json
+
   cache-save-yarn:
     steps:
       - save_cache:
@@ -384,33 +391,17 @@ commands:
       - run:
           name: list nx cache
           command: ls -l node_modules/.cache/nx
-      - store_artifacts:
-          path: ./node_modules/.cache/nx/file-map.json
-      - store_artifacts:
-          path: ./node_modules/.cache/nx/nxdeps.json
+      - save-nx-artifacts
 
   unit-test:
     steps:
       - run:
-          name: list nx cache
-          command: ls -l node_modules/.cache/nx
-      - run:
           name: Run unit tests
-          # command: npx nx run-many -t test-unit --parallel=1
-          command: sleep 2m
+          command: npx nx run-many -t test-unit --parallel=1
           environment:
             CI:
             NODE_ENV: test
-      - run:
-          name: list nx cache after test
-          command: ls -l node_modules/.cache/nx
-      - run:
-          name: nx graph
-          command: cat node_modules/.cache/nx/project-graph.json
-      - store_artifacts:
-          path: ./node_modules/.cache/nx/file-map.json
-      - store_artifacts:
-          path: ./node_modules/.cache/nx/nxdeps.json
+      - save-nx-artifacts
 
   save-init-workspace:
     steps:
@@ -437,8 +428,10 @@ commands:
           root: /home/circleci/project
           paths:
             - node_modules/.cache/nx
+
   restore-workspace:
     steps:
+      - git-clean
       - attach_workspace:
           at: /home/circleci/project
 
@@ -584,7 +577,6 @@ jobs:
     steps:
       - git-checkout
       - provision
-      - git-clean
       - build
       - cache-save-yarn
       - save-workspace
@@ -594,8 +586,6 @@ jobs:
     resource_class: large
     steps:
       - restore-workspace
-      # should get nx cache hits
-      - git-clean
       - build
 
   # Runs linter on packages that have changes.
@@ -620,7 +610,6 @@ jobs:
     resource_class: large
     steps:
       - restore-workspace
-      - git-clean
       - unit-test
 
   integration-test:
