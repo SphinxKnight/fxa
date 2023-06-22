@@ -752,7 +752,7 @@ jobs:
       - restore-workspace
       - run:
           name: Build
-          command: nx run-many -t build
+          command: nx run fxa-auth-server:prebuild
       - run:
           name: Build and deploy Storybooks
           command: |
