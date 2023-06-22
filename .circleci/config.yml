@@ -377,7 +377,7 @@ commands:
     steps:
       - run:
           name: Build
-          command: npx nx fxa-settings:prebuild --parallel=1
+          command: npx nx run fxa-settings:prebuild --parallel=1
           environment:
             CI:
             NODE_ENV: test

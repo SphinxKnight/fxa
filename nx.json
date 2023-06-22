@@ -36,7 +36,7 @@
       "inputs": ["production", "^production"]
     },
     "prebuild": {
-      "inputs": ["production", "^production"],
+      "inputs": ["production"],
       "outputs": [
         "{projectRoot}/locales",
         "{projectRoot}/public/locales",
@@ -209,8 +209,8 @@
       "!{projectRoot}/build",
       "!{projectRoot}/dist",
       "!{projectRoot}/locales",
-      "!{projectRoot}/public/locales",
-      "!{projectRoot}/public/legal-docs",
+      "!{projectRoot}/public/locales/**/*",
+      "!{projectRoot}/public/legal-docs/**/*",
       "!{projectRoot}/vendor/ejs.js",
       "!{projectRoot}/app/styles/main.css",
       "!{projectRoot}/server/config/local.json",
