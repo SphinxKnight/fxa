@@ -196,7 +196,7 @@ commands:
     steps:
         - run:
             name: Git clean files
-            command: git clean -xf
+            command: git clean -xfd -e node_modules -e dist -e build -e public
 
   git-checkout:
     # Note: Since we use a pre-populated base image that has a .git folder already present (see
