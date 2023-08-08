@@ -825,14 +825,23 @@ export class Account implements AccountData {
   }
 
   async sendVerificationCode() {
+    console.log('sessionToken() from Account.ts', sessionToken());
     await this.withLoadingStatus(
       this.authClient.sessionResendVerifyCode(sessionToken()!)
     );
   }
 
-  async verifySession(code: string) {
+  async verifySession(
+    code: string,
+    options: {
+      service?: string;
+      scopes?: string[];
+      marketingOptIn?: boolean;
+      newsletters?: string[];
+    } = {}
+  ) {
     await this.withLoadingStatus(
-      this.authClient.sessionVerifyCode(sessionToken()!, code)
+      this.authClient.sessionVerifyCode(sessionToken()!, code, options)
     );
     this.apolloClient.cache.modify({
       fields: {
