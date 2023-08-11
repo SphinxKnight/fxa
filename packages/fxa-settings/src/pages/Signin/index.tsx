@@ -151,7 +151,7 @@ const Signin = ({
       <TermsPrivacyAgreement {...{ isPocketClient }} />
 
       <div className="flex justify-between">
-        <FtlMsg id="signin-use-a-different-account">
+        <FtlMsg id="signin-use-a-different-account-link">
           {/* COMMENT FROM BACKBONE
           A user who came from an OAuth relier and was
           directed directly to /signin will not be able
@@ -162,7 +162,7 @@ const Signin = ({
             Use a different account
           </Link>
         </FtlMsg>
-        <FtlMsg id="signin-forgot-password">
+        <FtlMsg id="signin-forgot-password-link">
           <Link to="/reset_password" className="text-sm link-blue">
             Forgot password?
           </Link>
