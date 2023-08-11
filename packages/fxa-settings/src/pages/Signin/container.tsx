@@ -3,25 +3,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ReactElement, useEffect, useState } from 'react';
-import { RouteComponentProps } from '@reach/router';
-import { Integration, useAuthClient } from '../../models';
+import { RouteComponentProps, useLocation } from '@reach/router';
+import { Integration, isOAuthIntegration, useAuthClient } from '../../models';
 import { useFinishOAuthFlowHandler } from '../../lib/oauth/hooks';
 import Signin from '.';
-import { MozServices } from '../../lib/types';
 import { GET_BASIC_ACCOUNT } from './gql';
 import { useLazyQuery } from '@apollo/client';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { LoggedInAccountData, SigninSubmitData } from './interfaces';
 import { logPageViewEvent } from '../../lib/metrics';
 import { REACT_ENTRYPOINT } from '../../constants';
+import { sessionToken } from '../../lib/cache';
 
 export const viewName = 'signin';
 
 const SigninContainer = ({
   // TODO figure out why getting the email from localStorage isn't working
+  prefillEmail,
   email = 'dummy@gmail.com',
   integration,
 }: {
+  prefillEmail?: string;
   email?: string;
   integration: Integration;
 } & RouteComponentProps) => {
@@ -35,8 +37,7 @@ const SigninContainer = ({
     authClient,
     integration
   );
-  // Temporary values
-  const serviceName = MozServices.Default;
+
   const [loggedInAccount, setLoggedInAccount] = useState<LoggedInAccountData>();
   const [bannerErrorMessage, setBannerErrorMessage] = useState<
     string | ReactElement
@@ -109,6 +110,10 @@ const SigninContainer = ({
    */
   const isPasswordNeeded = () => {
     // TODO If the account doesn't have a sessionToken, we'll need a password
+    const currentSession = sessionToken();
+    if (!currentSession) {
+      return true;
+    }
 
     // TODO If the account doesn't yet have an email address, we'll need a password too.
     // how do we get in this state of having a logged in account that doesn't have an email?
@@ -118,11 +123,19 @@ const SigninContainer = ({
 
     // TODO If the relier wants keys, then the user must authenticate and the password must be requested.
     // This includes sync, which must skip the login chooser at all cost
+    if (integration.wantsKeys()) {
+      return true;
+    }
 
     // TODO If relier is OAuth and is requesting `prompt=login`, we'll need a password
+    if (isOAuthIntegration(integration) && integration.wantsLogin()) {
+      return true;
+    }
 
     // TODO If a prefill email does not match the logged in account email, we'll need a password
-    // TODO verify which email takes precedence (logged in trumps prefill?)
+    if (prefillEmail && prefillEmail !== loggedInAccount?.primaryEmail.email) {
+      return true;
+    }
 
     // If none of that is true, it's safe to proceed without asking for the password.
     return false;

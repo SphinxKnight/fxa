@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { RouteComponentProps, Link } from '@reach/router';
 import { useForm } from 'react-hook-form';
-import { FtlMsg } from 'fxa-react/lib/utils';
+import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import { REACT_ENTRYPOINT } from '../../constants';
 import { usePageViewEvent } from '../../lib/metrics';
 import { MozServices } from '../../lib/types';
@@ -129,21 +129,25 @@ const Signin = ({
         </div>
       </form>
 
-      <ThirdPartyAuth {...{ enabled: thirdPartyAuthEnabled }} />
+      <ThirdPartyAuth
+        {...{ enabled: thirdPartyAuthEnabled, showSeparator: isPasswordNeeded }}
+      />
 
       <TermsPrivacyAgreement {...{ isPocketClient }} />
 
       <div className="flex justify-between">
         <FtlMsg id="signin-use-a-different-account-link">
           {/* COMMENT FROM BACKBONE
-          A user who came from an OAuth relier and was
-          directed directly to /signin will not be able
-          to go back. Send them directly to `/` with the
-          account. The email will be prefilled on that page. */}
-          {/* Why not just send email instead of entire account? */}
-          <Link to="/" className="text-sm link-blue">
+          A user who came from an OAuth relier and was directed directly to /signin will not be able
+          to go back. Send them directly to `/` with the account. The email will be prefilled on that page. */}
+          {/* Requires a hardNavigateToContentServer until email-first entrypoint is converted to React */}
+          {/* TODO prevent '/' from redirecting back to 'signin' */}
+          <button
+            onClick={() => hardNavigateToContentServer(`/`)}
+            className="text-sm link-blue"
+          >
             Use a different account
-          </Link>
+          </button>
         </FtlMsg>
         <FtlMsg id="signin-forgot-password-link">
           <Link to="/reset_password" className="text-sm link-blue">
