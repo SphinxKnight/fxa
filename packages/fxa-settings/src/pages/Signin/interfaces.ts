@@ -52,9 +52,10 @@ export interface SigninProps {
   };
   bannerErrorMessage?: string | ReactElement;
   email?: string;
-  isPasswordNeeded?: boolean;
-  thirdPartyAuthEnabled?: boolean;
-  serviceName?: MozServices;
-  integration: SigninIntegration;
   finishOAuthFlowHandler: FinishOAuthFlowHandler;
+  integration: SigninIntegration;
+  isPasswordNeeded?: boolean;
+  onSubmit: ({ email, password }: SigninSubmitData) => Promise<void>;
+  serviceName?: MozServices;
+  thirdPartyAuthEnabled?: boolean;
 }

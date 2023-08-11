@@ -49,6 +49,7 @@ export const Subject = ({
       }}
       email={MOCK_EMAIL}
       integration={signinIntegration}
+      onSubmit={() => Promise.resolve()}
       finishOAuthFlowHandler={() => Promise.resolve({ redirect: 'someUri' })}
     />
   );

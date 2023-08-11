@@ -133,6 +133,7 @@ const SigninContainer = ({
    * Requires a sessionToken
    */
   const signinWithLoggedInAccount = () => {
+    alert('Signing in with logged in account');
     // TODO set the formPrefill email in case sign in fails
     // verify if this should still be done in React app
 
@@ -175,6 +176,7 @@ const SigninContainer = ({
   const signIn = async () =>
     // account (incl sessionToken), password, options (incl unblockCode, onSuccess)
     {
+      alert('Regular sign in');
       // TODO Handle Signin Impossible
       // IF:
       // - no account initialized
@@ -340,9 +342,10 @@ const SigninContainer = ({
       isPasswordNeeded={isPasswordNeeded()}
       {...{
         bannerErrorMessage,
-        serviceName,
-        integration,
         finishOAuthFlowHandler,
+        integration,
+        onSubmit,
+        serviceName,
       }}
     />
   );

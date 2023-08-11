@@ -23,11 +23,12 @@ const Signin = ({
   avatar,
   bannerErrorMessage,
   email,
-  isPasswordNeeded,
-  thirdPartyAuthEnabled = false,
-  serviceName,
-  integration,
   finishOAuthFlowHandler,
+  integration,
+  isPasswordNeeded,
+  onSubmit,
+  serviceName,
+  thirdPartyAuthEnabled = false,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
 
@@ -41,28 +42,6 @@ const Signin = ({
       password: '',
     },
   });
-
-  // TODO These methods should be passed in from the container
-  const signInUsingLoggedInAccount = useCallback(() => {
-    // TODO handle sign in without password
-  }, []);
-
-  const signInWithPassword = useCallback((email: string, password: string) => {
-    // TODO: handle signin with password
-  }, []);
-
-  const onSubmit = useCallback(
-    async ({ email, password }: SigninSubmitData) => {
-      try {
-        password && isPasswordNeeded
-          ? signInWithPassword(email, password)
-          : signInUsingLoggedInAccount();
-      } catch (e) {
-        // handle error
-      }
-    },
-    [signInUsingLoggedInAccount, signInWithPassword, isPasswordNeeded]
-  );
 
   return (
     <AppLayout>
