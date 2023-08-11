@@ -34,6 +34,8 @@ export interface LoggedInAccountData {
     authAt: number;
     enabled: boolean;
   };
+  // TODO change to enum
+  verificationMethod: string;
 }
 
 export interface SigninOAuthIntegration {

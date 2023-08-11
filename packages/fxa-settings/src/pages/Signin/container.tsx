@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ReactElement, useEffect, useState } from 'react';
-import { RouteComponentProps, useLocation } from '@reach/router';
+import { RouteComponentProps } from '@reach/router';
 import { Integration, isOAuthIntegration, useAuthClient } from '../../models';
 import { useFinishOAuthFlowHandler } from '../../lib/oauth/hooks';
 import Signin from '.';
@@ -14,6 +14,7 @@ import { LoggedInAccountData, SigninSubmitData } from './interfaces';
 import { logPageViewEvent } from '../../lib/metrics';
 import { REACT_ENTRYPOINT } from '../../constants';
 import { sessionToken } from '../../lib/cache';
+import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 
 export const viewName = 'signin';
 
@@ -145,31 +146,32 @@ const SigninContainer = ({
    * Sign in without a password, when `isPasswordNeeded` returns false
    * Requires a sessionToken
    */
-  const signinWithLoggedInAccount = () => {
+  const signinWithLoggedInAccount = async () => {
     alert('Signing in with logged in account');
     // TODO set the formPrefill email in case sign in fails
     // verify if this should still be done in React app
 
-    // If there's no logged in account data, abort
-    if (!loggedInAccount) {
-      return;
-    }
-
     try {
-      // TODO check account.accountProfile
-      // account.accountProfile()
-      // TODO check if the profile has TOTP enabled for cached accounts -
-      // if it does, set the verification method
-      // if (
-      //     profile.authenticationMethods &&
-      //     profile.authenticationMethods.includes('otp')
-      //   ) {
-      //     account.set('verificationMethod', VerificationMethods.TOTP_2FA);
-      //   }
+      const currentSessionToken = sessionToken();
+      if (!currentSessionToken) {
+        throw AuthUiErrors.INVALID_TOKEN;
+      }
+      const profile = await authClient.accountProfile(currentSessionToken);
+      console.log(profile);
+
+      // Check if the profile has TOTP enabled for cached accounts -
+      // if it does, set the verification method to TOTP_2FA
+      if (
+        profile.authenticationMethods &&
+        profile.authenticationMethods.includes('otp')
+      ) {
+        // TODO Where does this get set? to loggedInAccount state only?
+        // account.set('verificationMethod', VerificationMethods.TOTP_2FA);
+      }
       // TODO signin with account, null password and onSuccess option
       // When using a cached credential, the auth-server routes do not get hit,
       // completion event must be emitted here
-      //   onSuccess: () => logEvent('cached.signin.success')
+      // signin(account,null,{onSuccess: () => logEvent('cached.signin.success')})
     } catch (err) {
       // Session was invalid. Set a SESSION EXPIRED error on the model
       // causing an error to be displayed when the view re-renders
