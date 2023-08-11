@@ -33,8 +33,9 @@ function renderStory(
     bannerErrorMessage,
     isPasswordNeeded,
     thirdPartyAuthEnabled,
-    serviceName,
   }: Partial<SigninProps> = {},
+  // serviceName can be provided for mock integration
+  serviceName?: MozServices,
   storyName?: string
 ) {
   const story = () =>
@@ -43,8 +44,8 @@ function renderStory(
         {...{
           bannerErrorMessage,
           isPasswordNeeded,
-          thirdPartyAuthEnabled,
           serviceName,
+          thirdPartyAuthEnabled,
         }}
       />,
       {},
@@ -98,55 +99,7 @@ export const WithErrorBanner = () => {
 export const ServiceIsPocket = () => {
   return renderStory(
     { account: loggedInAccount },
-    { isPasswordNeeded: false, serviceName: MozServices.Pocket }
+    { isPasswordNeeded: false },
+    MozServices.Pocket
   );
 };
-
-// TODO : REWRITE STORIES
-
-// TODO: Add in error and success states when the Banner is added in
-// const SigninWithProvider = ({
-//   email,
-//   isPasswordNeeded,
-//   serviceName,
-// }: SigninProps) => {
-//   return (
-//     <LocationProvider>
-//       <AppLayout>
-//         <Signin {...{ email, isPasswordNeeded, serviceName }} />
-//       </AppLayout>
-//     </LocationProvider>
-//   );
-// };
-
-// export const PasswordNeeded = () => (
-//   <SigninWithProvider email={MOCK_EMAIL} isPasswordNeeded />
-// );
-
-// export const PasswordNotNeeded = () => (
-//   <SigninWithProvider email={MOCK_EMAIL} isPasswordNeeded={false} />
-// );
-
-// export const PasswordNotNeededCustomServiceName = () => (
-//   <SigninWithProvider
-//     email={MOCK_EMAIL}
-//     isPasswordNeeded={false}
-//     serviceName={MOCK_SERVICE}
-//   />
-// );
-
-// export const PasswordNeededCustomServiceName = () => (
-//   <SigninWithProvider
-//     email={MOCK_EMAIL}
-//     isPasswordNeeded={true}
-//     serviceName={MOCK_SERVICE}
-//   />
-// );
-
-// export const IsPocketClient = () => (
-//   <SigninWithProvider
-//     email={MOCK_EMAIL}
-//     isPasswordNeeded={false}
-//     serviceName={MozServices.Pocket}
-//   />
-// );

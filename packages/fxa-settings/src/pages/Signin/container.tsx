@@ -12,7 +12,7 @@ import { GET_BASIC_ACCOUNT } from './gql';
 import { useLazyQuery } from '@apollo/client';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { LoggedInAccountData, SigninSubmitData } from './interfaces';
-import { logPageViewEvent, logViewEvent } from '../../lib/metrics';
+import { logPageViewEvent } from '../../lib/metrics';
 import { REACT_ENTRYPOINT } from '../../constants';
 
 export const viewName = 'signin';
@@ -345,7 +345,6 @@ const SigninContainer = ({
         finishOAuthFlowHandler,
         integration,
         onSubmit,
-        serviceName,
       }}
     />
   );

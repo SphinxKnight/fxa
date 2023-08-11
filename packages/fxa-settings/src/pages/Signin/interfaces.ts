@@ -3,10 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ReactElement } from 'react';
-import { IntegrationSubsetType } from '../../lib/integrations';
 import { FinishOAuthFlowHandler } from '../../lib/oauth/hooks';
-import { MozServices } from '../../lib/types';
-import { IntegrationType, OAuthIntegrationData } from '../../models';
+import {
+  BaseIntegration,
+  IntegrationType,
+  OAuthIntegration,
+} from '../../models';
+import { IntegrationSubsetType } from '../../lib/integrations';
 
 export interface SigninFormData {
   email: string;
@@ -16,7 +19,7 @@ export interface SigninFormData {
 export type SigninSubmitData = {
   email: string;
   password?: string;
-} & SigninParams;
+};
 
 export interface LoggedInAccountData {
   avatar: {
@@ -33,17 +36,16 @@ export interface LoggedInAccountData {
   };
 }
 
-// TODO Add interface for location state?
-
-// What is in params vs props?
-export interface SigninParams {}
-
-// what data is needed for OAuthIntegration?
 export interface SigninOAuthIntegration {
   type: IntegrationType.OAuth;
+  getServiceName: () => ReturnType<OAuthIntegration['getServiceName']>;
 }
 
-export type SigninIntegration = SigninOAuthIntegration | IntegrationSubsetType;
+export interface SigninBaseIntegration extends IntegrationSubsetType {
+  getServiceName: () => ReturnType<BaseIntegration['getServiceName']>;
+}
+
+export type SigninIntegration = SigninOAuthIntegration | SigninBaseIntegration;
 
 export interface SigninProps {
   avatar?: {
@@ -56,6 +58,5 @@ export interface SigninProps {
   integration: SigninIntegration;
   isPasswordNeeded?: boolean;
   onSubmit: ({ email, password }: SigninSubmitData) => Promise<void>;
-  serviceName?: MozServices;
   thirdPartyAuthEnabled?: boolean;
 }

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RouteComponentProps, Link } from '@reach/router';
 import { useForm } from 'react-hook-form';
 import { FtlMsg } from 'fxa-react/lib/utils';
@@ -27,10 +27,17 @@ const Signin = ({
   integration,
   isPasswordNeeded,
   onSubmit,
-  serviceName,
   thirdPartyAuthEnabled = false,
 }: SigninProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
+
+  const [serviceName, setServiceName] = useState<string>(MozServices.Default);
+  useEffect(() => {
+    (async () => {
+      const name = await integration.getServiceName();
+      setServiceName(name);
+    })();
+  }, [integration]);
 
   const isPocketClient = serviceName === MozServices.Pocket;
 
@@ -122,9 +129,6 @@ const Signin = ({
         </div>
       </form>
 
-      {/* TODO: Handle logic for showing/enabling third party auth form
-      We will need to pull the enabled flag from feature flags or experiment data
-       */}
       <ThirdPartyAuth {...{ enabled: thirdPartyAuthEnabled }} />
 
       <TermsPrivacyAgreement {...{ isPocketClient }} />

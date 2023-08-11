@@ -6,37 +6,32 @@ import React from 'react';
 import Signin from '.';
 import { IntegrationType } from '../../models';
 import {
+  SigninBaseIntegration,
   SigninIntegration,
   SigninOAuthIntegration,
   SigninProps,
 } from './interfaces';
-import {
-  createMockSyncDesktopIntegration,
-  createMockWebIntegration,
-} from '../../lib/integrations/mocks';
-import { MOCK_EMAIL } from '../mocks';
+import { MOCK_EMAIL, MOCK_SERVICE } from '../mocks';
 import { MozServices } from '../../lib/types';
 
 export const Subject = ({
   integrationType = IntegrationType.Web,
   bannerErrorMessage = '',
   isPasswordNeeded = true,
-  thirdPartyAuthEnabled = false,
   serviceName = MozServices.Default,
+  thirdPartyAuthEnabled = false,
 }: {
   integrationType?: IntegrationType;
+  serviceName?: MozServices;
 } & Partial<SigninProps>) => {
   let signinIntegration: SigninIntegration;
   switch (integrationType) {
     case IntegrationType.OAuth:
-      signinIntegration = createMockResetPasswordOAuthIntegration();
-      break;
-    case IntegrationType.SyncDesktop:
-      signinIntegration = createMockSyncDesktopIntegration();
+      signinIntegration = createMockSigninOAuthIntegration();
       break;
     case IntegrationType.Web:
     default:
-      signinIntegration = createMockWebIntegration();
+      signinIntegration = createMockSigninWebIntegration(serviceName);
   }
 
   return (
@@ -45,7 +40,6 @@ export const Subject = ({
         bannerErrorMessage,
         isPasswordNeeded,
         thirdPartyAuthEnabled,
-        serviceName,
       }}
       email={MOCK_EMAIL}
       integration={signinIntegration}
@@ -55,8 +49,21 @@ export const Subject = ({
   );
 };
 
-function createMockResetPasswordOAuthIntegration(): SigninOAuthIntegration {
+export function createMockSigninWebIntegration(
+  serviceName?: MozServices
+): SigninBaseIntegration {
+  return {
+    type: IntegrationType.Web,
+    getServiceName: () =>
+      Promise.resolve(serviceName ? serviceName : MozServices.Default),
+  };
+}
+
+export function createMockSigninOAuthIntegration(
+  serviceName = MOCK_SERVICE
+): SigninOAuthIntegration {
   return {
     type: IntegrationType.OAuth,
+    getServiceName: () => Promise.resolve(serviceName),
   };
 }
