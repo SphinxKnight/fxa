@@ -31,18 +31,17 @@ import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ResendStatus } from 'fxa-settings/src/lib/types';
 import { ConfirmSignupCodeProps } from './interfaces';
 import {
-  IntegrationType,
   isOAuthIntegration,
   isSyncDesktopIntegration,
   isWebIntegration,
 } from '../../../models';
-import Storage from '../../../lib/storage';
 import { clearOAuthData } from '../../../lib/storage-utils';
 
 export const viewName = 'confirm-signup-code';
 
 type LocationState = {
   email: string;
+  sessionToken: string;
   selectedNewsletterSlugs?: string[];
   keyFetchToken: string;
   unwrapBKey: string;
@@ -67,7 +66,7 @@ const ConfirmSignupCode = ({
     state: LocationState;
   };
 
-  const { email, keyFetchToken, unwrapBKey } = location.state;
+  const { email, sessionToken, keyFetchToken, unwrapBKey } = location.state;
 
   const navigateToSignup = () => {
     hardNavigateToContentServer('/');
@@ -77,9 +76,6 @@ const ConfirmSignupCode = ({
     type: undefined,
     children: undefined,
   });
-
-  const localStorageData = Storage.factory('localStorage');
-  const sessionToken = localStorageData.get('sessionToken');
 
   const formAttributes: FormAttributes = {
     inputFtlId: 'confirm-signup-code-input-label',
@@ -112,7 +108,7 @@ const ConfirmSignupCode = ({
     if (resendStatus === ResendStatus.sent)
       setResendStatus(ResendStatus['not sent']);
     try {
-      await account.sendVerificationCode(sessionToken);
+      await account.sendVerificationCode();
       setBanner({ type: undefined, children: undefined });
       setResendStatus(ResendStatus['sent']);
     } catch (e) {
@@ -147,8 +143,8 @@ const ConfirmSignupCode = ({
       const sessionIsVerified = await account.isSessionVerifiedAuthClient();
       if (sessionIsVerified && isOAuthIntegration(integration)) {
         const { redirect } = await finishOAuthFlowHandler(
-          integration.data.uid || account.uid,
-          localStorageData.get(sessionToken),
+          integration.data.uid,
+          sessionToken,
           keyFetchToken,
           unwrapBKey
         );
@@ -248,7 +244,8 @@ const ConfirmSignupCode = ({
     'Enter confirmation code'
   );
 
-  if (!email || localStorageData.isNull()) {
+  // TODO also check for empty local storage?
+  if (!email) {
     navigateToSignup();
     return <LoadingSpinner />;
   }

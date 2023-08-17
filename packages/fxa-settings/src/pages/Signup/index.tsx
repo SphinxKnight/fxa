@@ -26,10 +26,12 @@ import CardHeader from '../../components/CardHeader';
 import { REACT_ENTRYPOINT } from '../../constants';
 import AppLayout from '../../components/AppLayout';
 import { SignupFormData, SignupProps } from './interfaces';
-import { sessionToken } from '../../lib/cache';
 import { notifyFirefoxOfLogin } from '../../lib/channels/helpers';
-import Storage from '../../lib/storage';
-import { getLocalizedErrorMessage } from '../../lib/auth-errors/auth-errors';
+import {
+  StoredAccountData,
+  persistAccount,
+  setCurrentAccount,
+} from '../../lib/storage-utils';
 
 export const viewName = 'signup';
 
@@ -152,10 +154,17 @@ const Signup = ({
       setBeginSignupLoading(false);
 
       if (data) {
-        Storage.factory('localStorage').set(
-          'sessionToken',
-          data.SignUp.sessionToken
-        );
+        const accountData: StoredAccountData = {
+          email: queryParams.email,
+          uid: data.SignUp.uid,
+          lastLogin: new Date(),
+          sessionToken: data.SignUp.sessionToken,
+          verified: false,
+          metricsEnabled: true,
+        };
+
+        persistAccount(accountData);
+        setCurrentAccount(data.SignUp.uid);
 
         // TODO: send up selected sync engines
         if (isSyncDesktopIntegration(integration)) {
@@ -173,6 +182,7 @@ const Signup = ({
         navigate(`/confirm_signup_code${location.search}`, {
           state: {
             email: queryParams.email,
+            sessionToken: data.SignUp.sessionToken,
             selectedNewsletterSlugs,
             keyFetchToken: data.SignUp.keyFetchToken,
             unwrapBKey: data.unwrapBKey,
