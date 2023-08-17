@@ -259,8 +259,7 @@ const DESCRIPTIONS = {
     If this param is specified, it forces the login to be verified using the specified method.
     Currently supported methods:
     - \`email\`: Sends an email with a confirmation link.
-    - \`email-otp\`: Sends an email with a confirmation code.
-    - \`totp-2fa\`: Requires two-step authentication.
+    - \`email-2fa\`: Sends an email with a confirmation code.
     - \`email-captcha\`: Sends an email with an unblock code.
   `,
   verificationReason:
