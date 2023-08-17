@@ -168,16 +168,19 @@ export function useFinishOAuthFlowHandler(
         keyFetchToken,
         kB
       );
+      console.log('keys: ', keys);
       const code = await constructOAuthCode(
         authClient,
         oAuthIntegration,
         sessionToken,
         keys
       );
+      console.log('code: ', code);
       const redirectUrl = constructOAuthRedirectUrl(
         code,
         oAuthIntegration.data.redirectTo
       );
+      console.log('redirectUrl: ', redirectUrl);
       return {
         redirect: redirectUrl.href,
       };

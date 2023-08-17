@@ -824,9 +824,9 @@ export class Account implements AccountData {
     );
   }
 
-  async sendVerificationCode() {
+  async sendVerificationCode(sessionToken: string) {
     await this.withLoadingStatus(
-      this.authClient.sessionResendVerifyCode(sessionToken()!)
+      this.authClient.sessionResendVerifyCode(sessionToken)
     );
   }
 
@@ -839,8 +839,9 @@ export class Account implements AccountData {
       newsletters?: string[];
     } = {}
   ) {
+    const sessionToken = Storage.factory('localStorage').get('sessionToken');
     await this.withLoadingStatus(
-      this.authClient.sessionVerifyCode(sessionToken()!, code, options)
+      this.authClient.sessionVerifyCode(sessionToken, code, options)
     );
     this.apolloClient.cache.modify({
       fields: {

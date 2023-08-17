@@ -28,6 +28,8 @@ import AppLayout from '../../components/AppLayout';
 import { SignupFormData, SignupProps } from './interfaces';
 import { sessionToken } from '../../lib/cache';
 import { notifyFirefoxOfLogin } from '../../lib/channels/helpers';
+import Storage from '../../lib/storage';
+import { getLocalizedErrorMessage } from '../../lib/auth-errors/auth-errors';
 
 export const viewName = 'signup';
 
@@ -141,7 +143,7 @@ const Signup = ({
 
       const options =
         serviceName !== MozServices.Default ? { service: serviceName } : {};
-      const { data, error } = await beginSignupHandler(
+      const { data, localizedErrorMessage } = await beginSignupHandler(
         queryParams.email,
         password,
         options
@@ -150,7 +152,10 @@ const Signup = ({
       setBeginSignupLoading(false);
 
       if (data) {
-        sessionToken(data.SignUp.sessionToken);
+        Storage.factory('localStorage').set(
+          'sessionToken',
+          data.SignUp.sessionToken
+        );
 
         // TODO: send up selected sync engines
         if (isSyncDesktopIntegration(integration)) {
@@ -174,14 +179,12 @@ const Signup = ({
           },
         });
       }
-      if (error) {
-        const { message, ftlId } = error;
-        setBannerErrorText(ftlMsgResolver.getMsg(ftlId, message));
+      if (localizedErrorMessage) {
+        setBannerErrorText(localizedErrorMessage);
       }
     },
     [
       beginSignupHandler,
-      ftlMsgResolver,
       navigate,
       selectedNewsletterSlugs,
       serviceName,
@@ -198,6 +201,7 @@ const Signup = ({
       <CardHeader
         headingText="Set your password"
         headingTextFtlId="signup-heading"
+        // TODO: Add variation for heading with custom subheading including RP
       />
 
       {bannerErrorText && (

@@ -4,21 +4,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { navigate, RouteComponentProps, useLocation } from '@reach/router';
-import {
-  CLEAR_MESSAGES_TIMEOUT,
-  REACT_ENTRYPOINT,
-  RESEND_CODE_TIMEOUT,
-} from '../../../constants';
+import { CLEAR_MESSAGES_TIMEOUT, REACT_ENTRYPOINT } from '../../../constants';
 import {
   AuthUiErrors,
-  composeAuthUiErrorTranslationId,
+  getLocalizedErrorMessage,
 } from '../../../lib/auth-errors/auth-errors';
 import { logViewEvent, usePageViewEvent } from '../../../lib/metrics';
-import {
-  FtlMsg,
-  hardNavigate,
-  hardNavigateToContentServer,
-} from 'fxa-react/lib/utils';
+import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
 import {
   useAccount,
   useAlertBar,
@@ -28,7 +20,6 @@ import AppLayout from '../../../components/AppLayout';
 import Banner, {
   BannerProps,
   BannerType,
-  ResendCodeErrorBanner,
   ResendEmailSuccessBanner,
 } from '../../../components/Banner';
 import CardHeader from '../../../components/CardHeader';
@@ -39,17 +30,23 @@ import { MailImage } from '../../../components/images';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ResendStatus } from 'fxa-settings/src/lib/types';
 import { ConfirmSignupCodeProps } from './interfaces';
-import { IntegrationType, isOAuthIntegration } from '../../../models';
-import { notifyFirefoxOfLogin } from '../../../lib/channels/helpers';
 import {
-  clearOAuthData,
-  clearOriginalTab,
-  isOriginalTab,
-} from '../../../lib/storage-utils';
+  IntegrationType,
+  isOAuthIntegration,
+  isSyncDesktopIntegration,
+  isWebIntegration,
+} from '../../../models';
+import Storage from '../../../lib/storage';
+import { clearOAuthData } from '../../../lib/storage-utils';
 
 export const viewName = 'confirm-signup-code';
 
-type LocationState = { email: string; selectedNewsletterSlugs?: string[] };
+type LocationState = {
+  email: string;
+  selectedNewsletterSlugs?: string[];
+  keyFetchToken: string;
+  unwrapBKey: string;
+};
 
 const ConfirmSignupCode = ({
   integration,
@@ -61,7 +58,6 @@ const ConfirmSignupCode = ({
   const alertBar = useAlertBar();
   const account = useAccount();
   const [codeErrorMessage, setCodeErrorMessage] = useState<string>('');
-  const [resendCodeCount, setResendCodeCount] = useState<number>(0);
   const [clearMessages, setClearMessages] = useState<boolean>(false);
   const [resendStatus, setResendStatus] = useState<ResendStatus>(
     ResendStatus['not sent']
@@ -71,7 +67,7 @@ const ConfirmSignupCode = ({
     state: LocationState;
   };
 
-  const email = location.state?.email;
+  const { email, keyFetchToken, unwrapBKey } = location.state;
 
   const navigateToSignup = () => {
     hardNavigateToContentServer('/');
@@ -81,6 +77,9 @@ const ConfirmSignupCode = ({
     type: undefined,
     children: undefined,
   });
+
+  const localStorageData = Storage.factory('localStorage');
+  const sessionToken = localStorageData.get('sessionToken');
 
   const formAttributes: FormAttributes = {
     inputFtlId: 'confirm-signup-code-input-label',
@@ -102,7 +101,6 @@ const ConfirmSignupCode = ({
     if (clearMessages) {
       const timer = setTimeout(() => {
         setCodeErrorMessage('');
-        setBanner({ type: undefined, children: undefined });
         setClearMessages(false);
       }, CLEAR_MESSAGES_TIMEOUT);
       return () => clearTimeout(timer);
@@ -110,92 +108,92 @@ const ConfirmSignupCode = ({
     return;
   }, [clearMessages]);
 
-  // Hide the ResendCode button after too many attempts. Redisplay button after a delay.
-  useEffect(() => {
-    if (resendCodeCount > 3) {
-      const timer = setTimeout(() => {
-        setResendCodeCount(0);
-      }, RESEND_CODE_TIMEOUT);
-      return () => clearTimeout(timer);
-    }
-    return;
-  }, [resendCodeCount]);
-
   async function handleResendCode() {
+    if (resendStatus === ResendStatus.sent)
+      setResendStatus(ResendStatus['not sent']);
     try {
-      await account.sendVerificationCode();
-      setResendCodeCount(resendCodeCount + 1);
+      await account.sendVerificationCode(sessionToken);
+      setBanner({ type: undefined, children: undefined });
       setResendStatus(ResendStatus['sent']);
     } catch (e) {
-      setResendStatus(ResendStatus['error']);
+      setResendStatus(ResendStatus.error);
+      const localizedErrorMessage = getLocalizedErrorMessage(ftlMsgResolver, e);
+      setBanner({ type: BannerType.error, children: localizedErrorMessage });
     }
   }
 
-  async function alertSuccessAndGoForward() {
-    switch (integration.type) {
-      case IntegrationType.SyncBasic:
-        // TODO: ConnectAnotherDeviceBehavior
-        break;
-      case IntegrationType.SyncDesktop:
-        // TODO notifyRelierOfLogin
-        // The relier is notified of login here because `beforeSignUpConfirmationPoll`
-        // is never called for users who verify at CWTS. Without the login notice,
-        // the browser will never know the user signed up.
-        break;
-      case IntegrationType.OAuth:
-        // TODO just use type guard instead of switch, FXA-8111
+  async function goForward() {
+    // we need to send a web channel message to FF to tell it the account was verified
+    // TODO notifyRelierOfLogin
 
-        // Clear session / local storage states
-        //   clearOAuthData();
-        // }
+    console.log('integration: ', integration);
 
-        // Check to see if the relier wants TOTP. Newly created accounts wouldn't have this
-        // so lets redirect them to signin and show a message on how it can be setup.
-        // This is temporary until we have a better landing page for this error.
-        if (
-          isOAuthIntegration(integration) &&
-          integration.wantsTwoStepAuthentication()
-        ) {
-          // TODO verify which message should be displayed, and how to ensure user is redirected to RP after setting up TOTP
-          navigate('/signin');
-        }
+    if (isSyncDesktopIntegration(integration)) {
+      // TODO: ConnectAnotherDeviceBehavior
+    }
 
-        // TODO how to get keyFetchToken and unwrapBKey?
-        // TODO build redirect for ConfirmSignupCode
-        // if (sessionIsVerified && isOAuthIntegration(integration)) {
-        //   const { redirect } = await finishOAuthFlowHandler(
-        //     integration.data.uid || account.uid,
-        //     account.sessionToken,
-        //     account.keyFetchToken,
-        //     account.unwrapBKey
-        //   );
+    if (isOAuthIntegration(integration)) {
+      // Clear session / local storage states
+      clearOAuthData();
 
-        // return finishOAuthSignUpFlow(account);
+      // Check to see if the relier wants TOTP. Newly created accounts wouldn't have this
+      // so lets redirect them to signin and show a message on how it can be setup.
+      // Should instead navigate to inline TOTP setup - needs UX
+      if (integration.wantsTwoStepAuthentication()) {
+        // TODO verify which message should be displayed, and how to ensure user is redirected to RP after setting up TOTP
+        navigate('/signin', { state: email });
+      }
 
-        /**
-         * Chrome for Android will not allow the page to redirect
-         * unless its the result of a user action such as a click.
-         *
-         * Instead of redirecting automatically after confirmation
-         * poll, force the user to the /sign(in|up)_complete page
-         * where they can click a "continue" button.
-         */
-        //     return new NavigateBehavior('signup_confirmed', {account, continueBrokerMethod: 'finishOAuthSignUpFlow', });
-        break;
-      case IntegrationType.Web:
-        alertBar.success(
-          ftlMsgResolver.getMsg(
-            'confirm-signup-code-success-alert',
-            'Account confirmed successfully'
-          )
+      const sessionIsVerified = await account.isSessionVerifiedAuthClient();
+      if (sessionIsVerified && isOAuthIntegration(integration)) {
+        const { redirect } = await finishOAuthFlowHandler(
+          integration.data.uid || account.uid,
+          localStorageData.get(sessionToken),
+          keyFetchToken,
+          unwrapBKey
         );
-        navigate('/settings', { replace: true });
-        break;
-      default:
-        navigate('signup_confirmed');
-      // TODO: run unpersistVerificationData when reliers are combined
+        console.log('redirect: ', redirect);
+
+        navigate(redirect);
+      }
     }
+
+    /**
+     * Chrome for Android will not allow the page to redirect
+     * unless its the result of a user action such as a click.
+     *
+     * Instead of redirecting automatically after confirmation
+     * poll, force the user to the /sign(in|up)_complete page
+     * where they can click a "continue" button.
+     */
+    //     return new NavigateBehavior('signup_confirmed', {account, continueBrokerMethod: 'finishOAuthSignUpFlow', });
+    if (isWebIntegration(integration)) {
+      alertBar.success(
+        ftlMsgResolver.getMsg(
+          'confirm-signup-code-success-alert',
+          'Account confirmed successfully'
+        )
+      );
+      navigate('/settings', { replace: true });
+    }
+
+    if (
+      !isSyncDesktopIntegration(integration) ||
+      !isOAuthIntegration(integration) ||
+      !isWebIntegration(integration)
+    ) {
+      navigate('signup_confirmed');
+    }
+    // TODO: run unpersistVerificationData when reliers are combined
   }
+
+  const getScopes = async () => {
+    if (isOAuthIntegration(integration)) {
+      const scopes = await integration.getPermissions();
+      return scopes;
+    }
+    return undefined;
+  };
 
   async function verifySession(code: string) {
     logViewEvent(`flow.${viewName}`, 'submit', REACT_ENTRYPOINT);
@@ -203,20 +201,18 @@ const ConfirmSignupCode = ({
       const newsletterSlugs = location.state?.selectedNewsletterSlugs;
       const hasSelectedNewsletters =
         newsletterSlugs && newsletterSlugs.length > 0;
+      const newsletters = hasSelectedNewsletters ? newsletterSlugs : undefined;
 
-      const options = hasSelectedNewsletters
-        ? { newsletters: newsletterSlugs }
-        : {};
+      const scopes = await getScopes();
+
+      const options = { ...{ newsletters, scopes } };
       await account.verifySession(code, options);
 
-      // FOLLOW-UP: does not yet exist in Settings
-      // BEFORE: notifier.trigger('verification.success');
       logViewEvent(
         `flow.${viewName}`,
         'verification.success',
         REACT_ENTRYPOINT
       );
-      // BEFORE: this.notifier.trigger('flow.event', {event: 'newsletter.subscribed',})
 
       if (hasSelectedNewsletters) {
         logViewEvent(
@@ -225,21 +221,10 @@ const ConfirmSignupCode = ({
           REACT_ENTRYPOINT
         );
       }
-
-      // FOLLOW-UP: Broker not yet implemented
-      // The broker handles navigation behaviour that varies depending on the relier
-      // and may include web channel notifications to ensure the verification is propagated
-      // to other tabs
-      // await broker.invokeBrokerMethod('afterSignUpConfirmationPoll', account);
-      // This may be taken care of with^ but we need to send a web channel message
-      // to FF to tell it the account was verified
-      alertSuccessAndGoForward();
+      goForward();
     } catch (e) {
       // TODO log error
-      const localizedErrorMessage = ftlMsgResolver.getMsg(
-        composeAuthUiErrorTranslationId(e),
-        e.message
-      );
+      const localizedErrorMessage = getLocalizedErrorMessage(ftlMsgResolver, e);
       // If the error is one of the three indicated types, display error in input tooltip
       if (
         e.errno === AuthUiErrors.INVALID_EXPIRED_SIGNUP_CODE.errno ||
@@ -250,8 +235,6 @@ const ConfirmSignupCode = ({
         setCodeErrorMessage(localizedErrorMessage);
       } else {
         // Any other error messages should be displayed in an error banner
-        // Should we display a generic user-friendly error?
-        // Right now this shows errors like "Invalid parameter in request body"
         setBanner({
           type: BannerType.error,
           children: <p>{localizedErrorMessage}</p>,
@@ -265,9 +248,7 @@ const ConfirmSignupCode = ({
     'Enter confirmation code'
   );
 
-  // this page shouldn't render if signup was not initiated
-  // BEFORE: if (!this.getAccount) redirect to signup
-  if (!email) {
+  if (!email || localStorageData.isNull()) {
     navigateToSignup();
     return <LoadingSpinner />;
   }
@@ -291,7 +272,6 @@ const ConfirmSignupCode = ({
       )}
 
       {resendStatus === ResendStatus['sent'] && <ResendEmailSuccessBanner />}
-      {resendStatus === ResendStatus['error'] && <ResendCodeErrorBanner />}
 
       <div className="flex justify-center mx-auto">
         <MailImage className="w-3/5" />
@@ -315,23 +295,15 @@ const ConfirmSignupCode = ({
         }}
       />
 
-      <div className="animate-delayed-fade-in opacity-0 mt-5 text-grey-500 text-xs inline-flex gap-1">
-        {resendCodeCount < 4 && (
-          <>
-            <FtlMsg id="confirm-signup-code-code-expired">
-              <p>Code expired?</p>
-            </FtlMsg>
-            <FtlMsg id="confirm-signup-code-resend-code-link">
-              <button
-                id="resend"
-                className="link-blue"
-                onClick={handleResendCode}
-              >
-                Email new code.
-              </button>
-            </FtlMsg>
-          </>
-        )}
+      <div className="mt-5 text-grey-500 text-xs inline-flex gap-1">
+        <FtlMsg id="confirm-signup-code-code-expired">
+          <p>Code expired?</p>
+        </FtlMsg>
+        <FtlMsg id="confirm-signup-code-resend-code-link">
+          <button id="resend" className="link-blue" onClick={handleResendCode}>
+            Email new code.
+          </button>
+        </FtlMsg>
       </div>
     </AppLayout>
   );

@@ -22,6 +22,8 @@ const SignupConfirmCodeContainer = ({
 
   // TODO: UX for this, FXA-8106
   if (oAuthDataError) {
+    console.log(oAuthDataError);
+    console.log(integration.data);
     return (
       <AppLayout>
         <CardHeader
