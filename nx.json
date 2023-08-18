@@ -29,6 +29,7 @@
       "outputs": [
         "{projectRoot}/*.tsbuildinfo",
         "{projectRoot}/*/.tmp",
+        "{projectRoot}/**/*.d.ts",
         "{projectRoot}/app/il8n",
         "{projectRoot}/build",
         "{projectRoot}/dist",
@@ -43,7 +44,7 @@
     "build-storybook": {
       "dependsOn": ["build"],
       "inputs": ["production", "^production"],
-      "outputs": ["{project-root}/storybook-static"]
+      "outputs": ["{projectRoot}/storybook-static"]
     },
     "compile": {
       "dependsOn": ["^compile"],
