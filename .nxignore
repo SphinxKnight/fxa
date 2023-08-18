@@ -1,0 +1,12 @@
+**/.nyc_output
+**/node_modules
+**/browser_modules
+**/public/locales
+**/public/legal-docs
+**/.vscode
+**/.tmp
+**/version.json
+**/*.out.css
+**/*.d.ts
+**/tsconfig.tsbuildinfo
+**/storybook-static
