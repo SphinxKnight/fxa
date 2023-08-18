@@ -299,7 +299,6 @@ export default BaseAuthenticationBroker.extend({
     if (this.relier.wantsTwoStepAuthentication()) {
       return this.getBehavior('afterSignUpRequireTOTP');
     }
-    console.log(account);
 
     return this.finishOAuthSignUpFlow(account);
   },

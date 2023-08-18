@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { navigate, RouteComponentProps, useLocation } from '@reach/router';
-import { CLEAR_MESSAGES_TIMEOUT, REACT_ENTRYPOINT } from '../../../constants';
+import { REACT_ENTRYPOINT } from '../../../constants';
 import {
   AuthUiErrors,
   getLocalizedErrorMessage,
@@ -30,18 +30,13 @@ import { MailImage } from '../../../components/images';
 import LoadingSpinner from 'fxa-react/components/LoadingSpinner';
 import { ResendStatus } from 'fxa-settings/src/lib/types';
 import { ConfirmSignupCodeProps } from './interfaces';
-import {
-  isOAuthIntegration,
-  isSyncDesktopIntegration,
-  isWebIntegration,
-} from '../../../models';
-import { clearOAuthData } from '../../../lib/storage-utils';
+import { isOAuthIntegration, isSyncDesktopIntegration } from '../../../models';
+import { sessionToken } from '../../../lib/cache';
 
 export const viewName = 'confirm-signup-code';
 
 type LocationState = {
   email: string;
-  sessionToken: string;
   selectedNewsletterSlugs?: string[];
   keyFetchToken: string;
   unwrapBKey: string;
@@ -57,7 +52,6 @@ const ConfirmSignupCode = ({
   const alertBar = useAlertBar();
   const account = useAccount();
   const [codeErrorMessage, setCodeErrorMessage] = useState<string>('');
-  const [clearMessages, setClearMessages] = useState<boolean>(false);
   const [resendStatus, setResendStatus] = useState<ResendStatus>(
     ResendStatus['not sent']
   );
@@ -66,7 +60,7 @@ const ConfirmSignupCode = ({
     state: LocationState;
   };
 
-  const { email, sessionToken, keyFetchToken, unwrapBKey } = location.state;
+  const { email, keyFetchToken, unwrapBKey } = location.state;
 
   const navigateToSignup = () => {
     hardNavigateToContentServer('/');
@@ -91,19 +85,6 @@ const ConfirmSignupCode = ({
     'Confirmation code is required'
   );
 
-  // When the user types in the code input field, all banners and tooltips should be cleared
-  // Timeout is added to reduce jankiness, but does not include a smooth hiding effect.
-  useEffect(() => {
-    if (clearMessages) {
-      const timer = setTimeout(() => {
-        setCodeErrorMessage('');
-        setClearMessages(false);
-      }, CLEAR_MESSAGES_TIMEOUT);
-      return () => clearTimeout(timer);
-    }
-    return;
-  }, [clearMessages]);
-
   async function handleResendCode() {
     if (resendStatus === ResendStatus.sent)
       setResendStatus(ResendStatus['not sent']);
@@ -122,48 +103,43 @@ const ConfirmSignupCode = ({
     // we need to send a web channel message to FF to tell it the account was verified
     // TODO notifyRelierOfLogin
 
-    console.log('integration: ', integration);
-
     if (isSyncDesktopIntegration(integration)) {
       // TODO: ConnectAnotherDeviceBehavior
+      // see connect-another-device-mixin
     }
 
     if (isOAuthIntegration(integration)) {
-      // Clear session / local storage states
-      clearOAuthData();
-
       // Check to see if the relier wants TOTP. Newly created accounts wouldn't have this
-      // so lets redirect them to signin and show a message on how it can be setup.
-      // Should instead navigate to inline TOTP setup - needs UX
+      // so lets redirect them to signin and show a message on how it can be set up.
+      // Should instead navigate to post verify TOTP setup
       if (integration.wantsTwoStepAuthentication()) {
         // TODO verify which message should be displayed, and how to ensure user is redirected to RP after setting up TOTP
-        navigate('/signin', { state: email });
-      }
-
-      const sessionIsVerified = await account.isSessionVerifiedAuthClient();
-      if (sessionIsVerified && isOAuthIntegration(integration)) {
+        navigate('/signin');
+      } else {
         const { redirect } = await finishOAuthFlowHandler(
           integration.data.uid,
-          sessionToken,
+          sessionToken()!,
           keyFetchToken,
           unwrapBKey
         );
-        console.log('redirect: ', redirect);
-
         navigate(redirect);
       }
     }
 
     /**
+     * TODO Add condition for OAuth on Chrome for Android
      * Chrome for Android will not allow the page to redirect
      * unless its the result of a user action such as a click.
      *
      * Instead of redirecting automatically after confirmation
-     * poll, force the user to the /sign(in|up)_complete page
+     * poll, force the user to the /signup_confirmed page
      * where they can click a "continue" button.
      */
     //     return new NavigateBehavior('signup_confirmed', {account, continueBrokerMethod: 'finishOAuthSignUpFlow', });
-    if (isWebIntegration(integration)) {
+    if (
+      !isOAuthIntegration(integration) &&
+      !isSyncDesktopIntegration(integration)
+    ) {
       alertBar.success(
         ftlMsgResolver.getMsg(
           'confirm-signup-code-success-alert',
@@ -173,13 +149,9 @@ const ConfirmSignupCode = ({
       navigate('/settings', { replace: true });
     }
 
-    if (
-      !isSyncDesktopIntegration(integration) ||
-      !isOAuthIntegration(integration) ||
-      !isWebIntegration(integration)
-    ) {
-      navigate('signup_confirmed');
-    }
+    // backbone had a base navigation behaviour to 'signup_confirmed' (Ready view)
+    // not sure when this should be shown
+
     // TODO: run unpersistVerificationData when reliers are combined
   }
 
@@ -288,7 +260,6 @@ const ConfirmSignupCode = ({
           localizedCustomCodeRequiredMessage,
           codeErrorMessage,
           setCodeErrorMessage,
-          setClearMessages,
         }}
       />
 

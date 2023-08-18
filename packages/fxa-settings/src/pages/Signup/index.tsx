@@ -211,7 +211,6 @@ const Signup = ({
       <CardHeader
         headingText="Set your password"
         headingTextFtlId="signup-heading"
-        // TODO: Add variation for heading with custom subheading including RP
       />
 
       {bannerErrorText && (
@@ -267,6 +266,7 @@ const Signup = ({
                 // TODO: this takes users to /signin if they've got an email in
                 // localStorage. Hopefully there's another workaround but might
                 // need to send a param back over to content-server?
+                // Should we clear localStorage when clicking on "Change email" or "Use another account"?
                 hardNavigateToContentServer('/');
               }}
             >
